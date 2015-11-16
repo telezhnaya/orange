@@ -1,5 +1,6 @@
 import cv2
 import os
+import sklearn
 
 images = 'images'
 
@@ -17,10 +18,10 @@ for o in os.listdir(images):
         features.append(features[-1])
 
 trainFeatures = features[0:500]
-testFeatures  = features[500:800]
-evalFeatures  = features[800:2300]
+testFeatures = features[500:800]
+evalFeatures = features[800:2300]
 
-trainAnswers  = []
+trainAnswers = []
 f = open("train")
 train = f.readlines()
 f.close()
@@ -28,7 +29,7 @@ f.close()
 for line in train:
     trainAnswers.append(int(line.strip().split(',')[1] == 'True'))
 
-testAnswers  = []
+testAnswers = []
 f = open("test")
 test = f.readlines()
 f.close()
@@ -37,15 +38,13 @@ for line in test:
     testAnswers.append(int(line.strip().split(',')[1] == 'True'))
 
 # training time!
-from sklearn import svm
-import sklearn.ensemble
+
 X = trainFeatures
 y = trainAnswers
 
 clf = sklearn.ensemble.RandomForestClassifier()
 clf.fit(X, y)
 
-import sklearn
 tested = clf.predict(testFeatures)
 print(sklearn.metrics.f1_score(testAnswers, tested))
 # gives 7.391
