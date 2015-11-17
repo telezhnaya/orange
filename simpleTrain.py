@@ -4,8 +4,7 @@ import sklearn
 import sklearn.ensemble
 import numpy as np
 
-print bool('False')
-raise StopIteration
+
 images = 'images'
 
 n_features = 3  # Change it if you add a feature
