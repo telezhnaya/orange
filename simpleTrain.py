@@ -1,5 +1,6 @@
 import cv2
 import os
+import random
 import sklearn
 import sklearn.ensemble
 import numpy as np
@@ -12,12 +13,12 @@ features = np.zeros((2300, n_features), np.uint8)
 all_shape = (640, 640, 3)
 
 trainAnswers = np.zeros((500, ), np.uint8)
-with open("train") as f:
+with open('train') as f:
     for i, line in enumerate(f.readlines()):
         trainAnswers[i] = int(line.strip().split(',')[1] == 'True')
 
 testAnswers = np.zeros((300, ), np.uint8)
-with open("test") as f:
+with open('test') as f:
     for i, line in enumerate(f.readlines()):
         testAnswers[i] = int(line.strip().split(',')[1] == 'True')
 
@@ -40,12 +41,25 @@ def center_pixel():
 def color_detect():
     image = cv2.imread('pokemon_games.png')
 
+    def salt_and_pepper(channel):
+        for i in range(channel.shape[0]):
+            for j in range(channel.shape[1]):
+                rand = random.random()
+                if rand < 0.15:
+                    channel[i][j] = 0
+                elif rand > 0.85:
+                    channel[i][j] = 255
+        return channel
+
     def get_orange_salted():
         orange = np.zeros(all_shape, np.uint8)
-        orange += (255, 165, 0)
-        # print(orange)
-        # cv2.imshow("images", orange)
-    get_orange_salted()
+        orange[:, :, 1] += 165
+        orange[:, :, 2] += 255
+        return cv2.merge(map(salt_and_pepper, cv2.split(orange)))
+    orange = cv2.medianBlur(get_orange_salted(), 3)
+    # cv2.imshow('orange', orange)
+    # cv2.waitKey(0)
+
     # define the list of boundaries
     boundaries = [
         # red
@@ -101,7 +115,7 @@ print(sklearn.metrics.f1_score(testAnswers, tested))
 
 evaluated = clf.predict(evalFeatures)
 with open('baseline.csv', 'w') as f:
-    f.write("Id,Prediction\n")
+    f.write('Id,Prediction\n')
     for i in range(800, 2300):
-        filename = "images/" + "0" * (4 - len(str(i))) + str(i) + ".jpg"
-        f.write(filename + "," + str(evaluated[i - 800]) + "\n")
+        filename = 'images/{:04}.jpg'.format(i)
+        f.write(','.join((filename, str(evaluated[i - 800]))) + '\n')
