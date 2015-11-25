@@ -109,7 +109,7 @@ def histogram_simple():
                 cv2.waitKey(0)
     '''
     for i, name in numbered_images:
-        img = cv2.imread(os.path.join(images, name))        
+        img = cv2.imread(os.path.join(images, name))
         if name != '0613.jpg':
             histo = cv2.calcHist([img], [0, 1, 2], None,
                                  [8, 8, 8], [0, 256, 0, 256, 0, 256])
