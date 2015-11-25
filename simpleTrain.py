@@ -4,13 +4,14 @@ import random
 import sklearn
 import sklearn.ensemble
 import numpy as np
-
+from matplotlib import pyplot as plt
 
 images = 'images'
 
 n_features = 4  # Change it if you add a feature
-features = np.zeros((2300, n_features), np.uint8)
+features = np.zeros((2300, n_features), np.float32)
 all_shape = (640, 640, 3)
+center_xy = (all_shape[0]//2 - 1, all_shape[1]//2 - 1)
 
 trainAnswers = np.zeros((500, ), np.uint8)
 with open('train') as f:
@@ -23,15 +24,17 @@ with open('test') as f:
         testAnswers[i] = int(line.strip().split(',')[1] == 'True')
 
 
-numbered_images = enumerate(os.listdir(images))
+numbered_images = list(enumerate(os.listdir(images)))
 
 
-# 3 features: colors of central pixel in bgr
 def center_pixel():
+    '''
+    3 features: colors of central pixel in bgr
+    '''
     for i, name in numbered_images:
         img = cv2.imread(os.path.join(images, name))
         if name != '0613.jpg':
-            features[i, :3] = img[all_shape[0]//2 - 1][all_shape[1]//2 - 1]
+            features[i, :3] = img[center_xy[0]][center_xy[1]]
             if not i % 100:
                 print(name)
         else:
@@ -39,8 +42,9 @@ def center_pixel():
 
 
 def color_detect():
-    image = cv2.imread('pokemon_games.png')
-
+    '''
+    TODO: add cv2.inRange method call with HSV color space
+    '''
     def salt_and_pepper(channel):
         for i in range(channel.shape[0]):
             for j in range(channel.shape[1]):
@@ -57,9 +61,12 @@ def color_detect():
         orange[:, :, 2] += 255
         return cv2.merge(map(salt_and_pepper, cv2.split(orange)))
     orange = cv2.medianBlur(get_orange_salted(), 3)
-    # cv2.imshow('orange', orange)
-    # cv2.waitKey(0)
 
+    for color in cv2.split(orange):
+        histo = cv2.calcHist([color], [0], None,
+                             [32], [0, 256])
+
+    image = cv2.imread('pokemon_games.png')
     # define the list of boundaries
     boundaries = [
         # red
@@ -86,6 +93,32 @@ def color_detect():
         # cv2.imshow("images", np.hstack([image, output]))
         # cv2.waitKey(0)
 
+
+def histogram_simple():
+    '''
+    right now added only mean of the histogram :(
+    3D histogram, three 2D histograms
+    '''
+    plt.figure()
+    plt.title('test')
+    plt.xlabel('Beans')
+    plt.ylabel('# of pixels')
+    '''
+                plt.plot(histo)
+                plt.show()
+                cv2.waitKey(0)
+    '''
+    for i, name in numbered_images:
+        img = cv2.imread(os.path.join(images, name))        
+        if name != '0613.jpg':
+            histo = cv2.calcHist([img], [0, 1, 2], None,
+                                 [8, 8, 8], [0, 256, 0, 256, 0, 256])
+            features[i][3] = np.mean(histo.flatten())
+            if not i % 100:
+                print(name)
+        else:
+            features[i] = features[-1]
+
 # here is great place for new features
 # please do it in function and
 # write a brief comment with a description at the top
@@ -93,8 +126,9 @@ def color_detect():
 # at next function we must write features[i, 3:]
 # because we already has first 3 features
 
-# center_pixel()
+center_pixel()
 color_detect()
+histogram_simple()
 # do not forget to exec your code
 
 
