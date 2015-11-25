@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 
 images = 'images'
 
-n_features = 4  # Change it if you add a feature
+n_features = 64  # Change it if you add a feature
 features = np.zeros((2300, n_features), np.float32)
 all_shape = (640, 640, 3)
 center_xy = (all_shape[0]//2 - 1, all_shape[1]//2 - 1)
@@ -119,6 +119,38 @@ def histogram_simple():
         else:
             features[i] = features[-1]
 
+
+def rgb_histogram_example():
+    '''
+    improve it
+    '''
+    for i, name in numbered_images:
+        img = cv2.imread(os.path.join(images, name))
+        img = img // 64
+        b, g, r = cv2.split(img)
+        pixels = 16 * r + 4 * g + b  # r << 4 + g << 2 + b
+        hist = np.bincount(pixels.ravel(), minlength=64)
+        hist = hist.astype(float)
+        hist = np.log1p(hist)
+        features[i] = hist
+
+
+def hsv_histogram_example():
+    '''
+    improve it
+    '''
+    for i, name in numbered_images:
+        img = cv2.imread(os.path.join(images, name))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        img = img // 64
+        h, s, v = cv2.split(img)
+        pixels = 16 * h + 4 * s + v
+        hist = np.bincount(pixels.ravel(), minlength=64)
+        hist = hist.astype(float)
+        hist = np.log1p(hist)
+        features[i] = hist
+
+
 # here is great place for new features
 # please do it in function and
 # write a brief comment with a description at the top
@@ -126,9 +158,11 @@ def histogram_simple():
 # at next function we must write features[i, 3:]
 # because we already has first 3 features
 
-center_pixel()
-color_detect()
-histogram_simple()
+# center_pixel()
+# color_detect()
+# histogram_simple()
+rgb_histogram_example()
+# hsv_histogram_example()
 # do not forget to exec your code
 
 
@@ -148,7 +182,7 @@ print(sklearn.metrics.f1_score(testAnswers, tested))
 # gives 7.391
 
 evaluated = clf.predict(evalFeatures)
-with open('baseline.csv', 'w') as f:
+with open('results.csv', 'w') as f:
     f.write('Id,Prediction\n')
     for i in range(800, 2300):
         filename = 'images/{:04}.jpg'.format(i)
