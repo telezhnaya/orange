@@ -2,9 +2,15 @@ import cv2
 import os
 import random
 import sklearn
-import sklearn.ensemble
 import numpy as np
 from matplotlib import pyplot as plt
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 images = 'images'
 
@@ -174,16 +180,35 @@ evalFeatures = features[800:2300]
 X = trainFeatures
 y = trainAnswers
 
-clf = sklearn.ensemble.RandomForestClassifier()
-clf.fit(X, y)
+names = ["Nearest Neighbors", "Linear SVM", "RBF SVM", "Decision Tree",
+         "Random Forest", "AdaBoost", "Naive Bayes",
+         "Linear Discriminant Analysis", "Quadratic Discriminant Analysis"]
 
-tested = clf.predict(testFeatures)
-print(sklearn.metrics.f1_score(testAnswers, tested))
-# gives 7.391
+classifiers = [
+    KNeighborsClassifier(),
+    SVC(kernel="linear"),
+    SVC(),
+    DecisionTreeClassifier(),
+    RandomForestClassifier(),
+    AdaBoostClassifier(),
+    GaussianNB(),
+    LinearDiscriminantAnalysis(),
+    QuadraticDiscriminantAnalysis()
+]
 
-evaluated = clf.predict(evalFeatures)
-with open('results.csv', 'w') as f:
-    f.write('Id,Prediction\n')
-    for i in range(800, 2300):
-        filename = 'images/{:04}.jpg'.format(i)
-        f.write(','.join((filename, str(evaluated[i - 800]))) + '\n')
+for name, clf in zip(names, classifiers):
+        clf.fit(X, y)
+        tested = clf.predict(testFeatures)
+        print(name, sklearn.metrics.f1_score(testAnswers, tested))
+
+# clf = AdaBoostClassifier()
+# clf.fit(X, y)
+# tested = clf.predict(testFeatures)
+# print(sklearn.metrics.f1_score(testAnswers, tested))
+#
+# evaluated = clf.predict(evalFeatures)
+# with open('results.csv', 'w') as f:
+#     f.write('Id,Prediction\n')
+#     for i in range(800, 2300):
+#         filename = 'images/{:04}.jpg'.format(i)
+#         f.write(','.join((filename, str(evaluated[i - 800]))) + '\n')
