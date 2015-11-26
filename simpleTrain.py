@@ -1,4 +1,5 @@
 import cv2
+import itertools
 import os
 import random
 import sklearn
@@ -14,7 +15,7 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 images = 'images'
 
-n_features = 128  # Change it if you add a feature
+n_features = 195  # Change it if you add a feature
 features = np.zeros((2300, n_features), np.float32)
 all_shape = (640, 640, 3)
 center_xy = (all_shape[0]//2 - 1, all_shape[1]//2 - 1)
@@ -102,28 +103,64 @@ def histogram_simple():
     right now added only mean of the histogram :(
     3D histogram, three 2D histograms
     '''
-    plt.figure()
-    plt.title('test')
-    plt.xlabel('Beans')
-    plt.ylabel('# of pixels')
-    '''
-                plt.plot(histo)
-                plt.show()
-                cv2.waitKey(0)
-    '''
     for i, name in numbered_images:
         img = cv2.imread(os.path.join(images, name))
         # histo3d = cv2.calcHist([img], [0, 1, 2], None,
-        #                      [8, 8, 8], [0, 256, 0, 256, 0, 256])
+        #                        [8, 8, 8], [0, 256, 0, 256, 0, 256])
         start = 3
         # features[i, 3:start] = np.log1p(histo3d.flatten())
         bucket_size = 8
-        for ch in cv2.split(img):
-            hist = cv2.calcHist([ch], [0], None, [bucket_size], [0, 256])
-            features[i, start:start+bucket_size] = hist[:, 0]
-            start += bucket_size
+        chans = cv2.split(img)
+#         color = ['b', 'g', 'r']
+#         hist_needed = not os.path.isfile('{}.png'.format(name))
+#         fig = plt.figure()
+#         for j, ch in enumerate(chans):
+#             # hist = cv2.calcHist([ch], [0], None, [bucket_size], [0, 256])
+#             # features[i, start:start+bucket_size] = hist[:, 0]
+#             # start += bucket_size
+        hist = cv2.calcHist([chans[1], chans[0]], [0, 1], None,
+                            [bucket_size, bucket_size], [0, 256, 0, 256])
+        hist = np.log1p(hist)
+        features[i, start:start+bucket_size**2] = hist.flatten()
+        start += bucket_size ** 2
+        hist = cv2.calcHist([chans[1], chans[2]], [0, 1], None,
+                            [bucket_size, bucket_size], [0, 256, 0, 256])
+        hist = np.log1p(hist)
+        features[i, start:start+bucket_size**2] = hist.flatten()
+        start += bucket_size ** 2
+        hist = cv2.calcHist([chans[0], chans[2]], [0, 1], None,
+                            [bucket_size, bucket_size], [0, 256, 0, 256])
+        hist = np.log1p(hist)
+        features[i, start:start+bucket_size**2] = hist.flatten()
+        start += bucket_size ** 2
+#             if hist_needed:
+#                 ax = fig.add_subplot(211)
+#                 ax.set_title('{}, answer "{}"'.format(name,
+#                                                       trainAnswers[i] == 1))
+#                 ax.set_xlabel('Beans')
+#                 ax.set_ylabel('# of pixels')
+#                 ax.plot(hist, color=color[j])
+#                 ax.set_xlim([0, bucket_size-1])
+#         if hist_needed:
+#             # plot a 2D color histogram for green and blue
+#             ax1 = fig.add_subplot(234)
+#             p = ax1.imshow(hist, interpolation='nearest')
+#             ax1.set_title('Green and Blue')
+#
+#             # plot a 2D color histogram for green and red
+#             ax2 = fig.add_subplot(235)
+#             p = ax2.imshow(hist, interpolation='nearest')
+#             ax2.set_title('Green and Red')
+#
+#             # plot a 2D color histogram for blue and red
+#             ax3 = fig.add_subplot(236)
+#             p = ax3.imshow(hist, interpolation='nearest')
+#             ax3.set_title('Blue and Red')
+#         if hist_needed:
+#             fig.savefig('{}.png'.format(name))
+#         plt.clf()
         if not i % 100:
-            pass  # print(name)
+            print(name)
 
 
 def rgb_histogram_example():
@@ -165,9 +202,9 @@ def hsv_histogram_example():
 
 # center_pixel()
 # color_detect()
-# histogram_simple()
-rgb_histogram_example()
-hsv_histogram_example()
+histogram_simple()
+# rgb_histogram_example()
+# hsv_histogram_example()
 # do not forget to exec your code
 
 cv2.normalize(features, features)
@@ -180,13 +217,13 @@ evalFeatures = features[800:2300]
 X = trainFeatures
 y = trainAnswers
 
-names = ['Nearest Neighbors', 'RBF SVM', 'Decision Tree',
+names = ['Nearest Neighbors', 'Linear SVM', 'RBF SVM', 'Decision Tree',
          'Random Forest', 'AdaBoost', 'Naive Bayes',
          'Linear Discriminant Analysis', 'Quadratic Discriminant Analysis']
 
 classifiers = [
     KNeighborsClassifier(),
-    # SVC(kernel='linear'), 'Linear SVM', 
+    SVC(kernel='linear'),
     SVC(),
     DecisionTreeClassifier(),
     RandomForestClassifier(),
