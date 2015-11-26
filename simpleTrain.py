@@ -14,7 +14,7 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 images = 'images'
 
-n_features = 64  # Change it if you add a feature
+n_features = 0 + 9*3  # Change it if you add a feature
 features = np.zeros((2300, n_features), np.float32)
 all_shape = (640, 640, 3)
 center_xy = (all_shape[0]//2 - 1, all_shape[1]//2 - 1)
@@ -39,12 +39,9 @@ def center_pixel():
     '''
     for i, name in numbered_images:
         img = cv2.imread(os.path.join(images, name))
-        if name != '0613.jpg':
-            features[i, :3] = img[center_xy[0]][center_xy[1]]
-            if not i % 100:
-                print(name)
-        else:
-            features[i] = features[-1]
+        features[i, :3] = img[center_xy[0]][center_xy[1]]
+        if not i % 100:
+            pass  # print(name)
 
 
 def color_detect():
@@ -96,7 +93,7 @@ def color_detect():
         output = cv2.bitwise_and(image, image, mask=mask)
 
         # show the images
-        # cv2.imshow("images", np.hstack([image, output]))
+        # cv2.imshow('images', np.hstack([image, output]))
         # cv2.waitKey(0)
 
 
@@ -116,14 +113,17 @@ def histogram_simple():
     '''
     for i, name in numbered_images:
         img = cv2.imread(os.path.join(images, name))
-        if name != '0613.jpg':
-            histo = cv2.calcHist([img], [0, 1, 2], None,
-                                 [8, 8, 8], [0, 256, 0, 256, 0, 256])
-            features[i][3] = np.mean(histo.flatten())
-            if not i % 100:
-                print(name)
-        else:
-            features[i] = features[-1]
+        # histo3d = cv2.calcHist([img], [0, 1, 2], None,
+        #                      [8, 8, 8], [0, 256, 0, 256, 0, 256])
+        start = 3
+        # features[i, 3:start] = np.log1p(histo3d.flatten())
+        bucket_size = 8
+        for ch in cv2.split(img):
+            hist = cv2.calcHist([ch], [0], None, [bucket_size], [0, 256])
+            features[i, start:start+bucket_size] = hist[:, 0]
+            start += bucket_size
+        if not i % 100:
+            pass  # print(name)
 
 
 def rgb_histogram_example():
@@ -138,7 +138,7 @@ def rgb_histogram_example():
         hist = np.bincount(pixels.ravel(), minlength=64)
         hist = hist.astype(float)
         hist = np.log1p(hist)
-        features[i] = hist
+        features[i, :64] = hist
 
 
 def hsv_histogram_example():
@@ -154,8 +154,7 @@ def hsv_histogram_example():
         hist = np.bincount(pixels.ravel(), minlength=64)
         hist = hist.astype(float)
         hist = np.log1p(hist)
-        features[i] = hist
-
+        features[i, 64:] = hist
 
 # here is great place for new features
 # please do it in function and
@@ -164,13 +163,14 @@ def hsv_histogram_example():
 # at next function we must write features[i, 3:]
 # because we already has first 3 features
 
-# center_pixel()
+center_pixel()
 # color_detect()
-# histogram_simple()
-rgb_histogram_example()
+histogram_simple()
+# rgb_histogram_example()
 # hsv_histogram_example()
 # do not forget to exec your code
 
+cv2.normalize(features, features)
 
 # training time!
 trainFeatures = features[0:500]
@@ -180,13 +180,13 @@ evalFeatures = features[800:2300]
 X = trainFeatures
 y = trainAnswers
 
-names = ["Nearest Neighbors", "Linear SVM", "RBF SVM", "Decision Tree",
-         "Random Forest", "AdaBoost", "Naive Bayes",
-         "Linear Discriminant Analysis", "Quadratic Discriminant Analysis"]
+names = ['Nearest Neighbors', 'Linear SVM', 'RBF SVM', 'Decision Tree',
+         'Random Forest', 'AdaBoost', 'Naive Bayes',
+         'Linear Discriminant Analysis', 'Quadratic Discriminant Analysis']
 
 classifiers = [
     KNeighborsClassifier(),
-    SVC(kernel="linear"),
+    SVC(kernel='linear'), 
     SVC(),
     DecisionTreeClassifier(),
     RandomForestClassifier(),
