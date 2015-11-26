@@ -14,7 +14,7 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 images = 'images'
 
-n_features = 0 + 9*3  # Change it if you add a feature
+n_features = 128  # Change it if you add a feature
 features = np.zeros((2300, n_features), np.float32)
 all_shape = (640, 640, 3)
 center_xy = (all_shape[0]//2 - 1, all_shape[1]//2 - 1)
@@ -137,7 +137,7 @@ def rgb_histogram_example():
         pixels = 16 * r + 4 * g + b  # r << 4 + g << 2 + b
         hist = np.bincount(pixels.ravel(), minlength=64)
         hist = hist.astype(float)
-        hist = np.log1p(hist)
+        # hist = np.log1p(hist)
         features[i, :64] = hist
 
 
@@ -153,7 +153,7 @@ def hsv_histogram_example():
         pixels = 16 * h + 4 * s + v
         hist = np.bincount(pixels.ravel(), minlength=64)
         hist = hist.astype(float)
-        hist = np.log1p(hist)
+        # hist = np.log1p(hist)
         features[i, 64:] = hist
 
 # here is great place for new features
@@ -163,11 +163,11 @@ def hsv_histogram_example():
 # at next function we must write features[i, 3:]
 # because we already has first 3 features
 
-center_pixel()
+# center_pixel()
 # color_detect()
-histogram_simple()
-# rgb_histogram_example()
-# hsv_histogram_example()
+# histogram_simple()
+rgb_histogram_example()
+hsv_histogram_example()
 # do not forget to exec your code
 
 cv2.normalize(features, features)
@@ -180,13 +180,13 @@ evalFeatures = features[800:2300]
 X = trainFeatures
 y = trainAnswers
 
-names = ['Nearest Neighbors', 'Linear SVM', 'RBF SVM', 'Decision Tree',
+names = ['Nearest Neighbors', 'RBF SVM', 'Decision Tree',
          'Random Forest', 'AdaBoost', 'Naive Bayes',
          'Linear Discriminant Analysis', 'Quadratic Discriminant Analysis']
 
 classifiers = [
     KNeighborsClassifier(),
-    SVC(kernel='linear'), 
+    # SVC(kernel='linear'), 'Linear SVM', 
     SVC(),
     DecisionTreeClassifier(),
     RandomForestClassifier(),
