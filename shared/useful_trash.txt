@@ -3,3 +3,5 @@ http://www.pyimagesearch.com/2014/01/27/hobbits-and-histograms-a-how-to-guide-to
 http://www.pyimagesearch.com/2014/01/22/clever-girl-a-guide-to-utilizing-color-histograms-for-computer-vision-and-image-search-engines/
 http://docs.opencv.org/master/d5/daf/tutorial_py_histogram_equalization.html#gsc.tab=0
 http://docs.opencv.org/master/d1/db7/tutorial_py_histogram_begins.html#gsc.tab=0
+http://www.janeriksolem.net/2011/02/3d-plotting-with-matplotlib.html
+http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html

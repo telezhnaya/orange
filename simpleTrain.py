@@ -5,13 +5,14 @@ import random
 import sklearn
 import numpy as np
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 images = 'images'
 
@@ -105,8 +106,14 @@ def histogram_simple():
     '''
     for i, name in numbered_images:
         img = cv2.imread(os.path.join(images, name))
-        # histo3d = cv2.calcHist([img], [0, 1, 2], None,
-        #                        [8, 8, 8], [0, 256, 0, 256, 0, 256])
+        histo3d = cv2.calcHist([img], [0, 1, 2], None,
+                               [8, 8, 8], [0, 256, 0, 256, 0, 256])
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        print(histo3d.shape)
+        ax.scatter(histo3d[:, 0], histo3d[:, 1], histo3d[:, 2])
+        plt.show()
+        plt.clf()
         start = 3
         # features[i, 3:start] = np.log1p(histo3d.flatten())
         bucket_size = 8
