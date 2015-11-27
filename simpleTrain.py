@@ -119,7 +119,7 @@ def histogram_simple():
         bucket_size = 8
         chans = cv2.split(img)
 #         color = ['b', 'g', 'r']
-#         hist_needed = not os.path.isfile('{}.png'.format(name))
+#         hist_needed = not os.path.isfile('Histo/{}.png'.format(name))
 #         fig = plt.figure()
 #         for j, ch in enumerate(chans):
 #             # hist = cv2.calcHist([ch], [0], None, [bucket_size], [0, 256])
@@ -164,7 +164,7 @@ def histogram_simple():
 #             p = ax3.imshow(hist, interpolation='nearest')
 #             ax3.set_title('Blue and Red')
 #         if hist_needed:
-#             fig.savefig('{}.png'.format(name))
+#             fig.savefig('Histo/{}.png'.format(name))
 #         plt.clf()
         if not i % 100:
             print(name)
